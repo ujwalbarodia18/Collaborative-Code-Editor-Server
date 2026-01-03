@@ -1,16 +1,10 @@
 import { Router } from 'express';
 import { createRoom, getRoom, isRoomPasswordProtected } from '../controllers/room.controller';
+import { authMiddleware } from '../middlewares/auth.middleware';
 
 const router = Router();
 
-// router.post('/createRoom', (_req: any, res: any) => {
-//   const room = createRoom();
-//   res.status(201).json({ status: 1, data: room });
-// });
-
-
-
-router.post('/createRoom', async (req, res) => {
+router.post('/createRoom', authMiddleware, async (req, res) => {
   try {
     const { name, password } = req.body;
     const room = {
@@ -29,7 +23,6 @@ router.post('/createRoom', async (req, res) => {
 router.post('/getRoom', async (req, res) => {
   try {
     const { roomId, password } = req.body;
-  
     const room = await getRoom(roomId, password);
     res.status(201).json({ status: 1, data: room });
   } catch (err) {

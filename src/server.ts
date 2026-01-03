@@ -4,6 +4,7 @@ import authRoutes from './routes/auth.route';
 import cors from 'cors';
 import { connectMongo } from './db/mongo';
 import { errorHandler } from './middlewares/error.middleware';
+import commonRoutes from './routes/common.route';
 
 connectMongo().then().catch();
 
@@ -17,6 +18,7 @@ app.use(express.json());
 
 app.use('/room', roomRoutes);
 app.use('/auth', authRoutes);
+app.use('/common', commonRoutes);
 
 app.use(errorHandler);
 const PORT = 3000;

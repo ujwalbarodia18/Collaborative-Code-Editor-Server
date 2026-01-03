@@ -12,8 +12,8 @@ export function errorHandler(
       status: 0,
       message: err.message
     });
-  } 
-
+  }
+  
   return res.status(500).json({
     status: 0,
     message: 'Something went wrong'

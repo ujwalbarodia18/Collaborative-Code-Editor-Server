@@ -25,20 +25,12 @@ import { loginService, registerService } from "../services/auth.service";
 export const registerController = asyncHandler(
   async (req: Request, res: Response) => {
 	const { name, email, password } = req.body;
-	// try {
-		const user = await registerService({ name, email, password });
+	const user = await registerService({ name, email, password });
 
-		res.status(201).json({ 
-			status: 1, 
-			data: user 
-		});
-	// }
-	// catch(err) {
-	// 	res.status(400).json({
-	// 		err
-	// 	})
-	// }
-	
+	res.status(201).json({ 
+		status: 1, 
+		data: user 
+	});
   }
 );
 

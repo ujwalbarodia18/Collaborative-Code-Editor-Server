@@ -24,14 +24,7 @@ export async function loginService(loginDetails: any) {
     userId: user._id.toString()
   });
 
-  return {
-    token,
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email
-    }
-  };
+  return { token };
 }
 
 export async function registerService(userDetails: any) {
@@ -49,7 +42,16 @@ export async function registerService(userDetails: any) {
             password: hashedPassword,
         });
         const user = await UserModel.findById(newUser._id);
-        return user;
+
+        if (!user) {
+            throw new ErrorFramework("Something went wrong", 500);
+        }
+
+        const token = signToken({
+            userId: user._id.toString()
+        });
+
+        return { token };
     }
     catch(err: any) {
         if (err instanceof mongoose.Error.ValidationError) {

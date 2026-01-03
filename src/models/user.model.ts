@@ -11,7 +11,10 @@ const userSchema = new mongoose.Schema({
     required: true,
     select: false
   },
-  name: String
+  name: {
+    type: String,
+    required: true
+  }
 }, { timestamps: true });
 
 export const UserModel = mongoose.model('User', userSchema);

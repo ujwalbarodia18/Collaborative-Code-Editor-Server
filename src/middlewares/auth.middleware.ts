@@ -13,7 +13,6 @@ export function authMiddleware(
   next: NextFunction
 ) {
   const header = req.headers.authorization;
-
   if (!header) {
     return res.status(401).json({ message: 'Missing token' });
   }

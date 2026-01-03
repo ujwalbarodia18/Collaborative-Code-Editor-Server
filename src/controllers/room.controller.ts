@@ -22,9 +22,8 @@ export async function createRoom(roomDetails : RoomDetails) {
     return room;
 }
 
-export async function getRoom(roomId: string, password: string) {
-    const room = await RoomModel.findOne({roomId, password});
-    console.log("ROOM", room);
+export async function getRoom(roomId: string, password: string) {    
+    const room = await RoomModel.findOne({roomId});
     return room;
 }
 
