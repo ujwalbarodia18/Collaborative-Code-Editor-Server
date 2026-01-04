@@ -11,5 +11,11 @@ export async function getUser(userId: string) {
         throw new ErrorFramework('Invalid userId (No user found with this id)', 500);
     }
 
-    return { user };
+    return {
+        user: {
+            userId: user._id.toString(),
+            email: user.email,
+            name: user.name
+        }        
+    };
 }
