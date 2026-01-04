@@ -7,6 +7,10 @@ const roomSchema = new mongoose.Schema({
     unique: true,
     index: true
   },
+  ydoc: {
+    type: Buffer,
+    default: null
+  },
   name: {
     type: String,
     default: 'Untitled'
@@ -14,6 +18,10 @@ const roomSchema = new mongoose.Schema({
   password: {
     type: String,
     select: false
+  },
+  lastUpdatedAt: {
+    type: Date,
+    default: null
   }
 }, {
   timestamps: true

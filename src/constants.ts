@@ -1,0 +1,1 @@
+export const ROOM_AUTOSAVE_INTERVAL = 5000;
