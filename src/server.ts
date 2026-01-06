@@ -8,8 +8,10 @@ import commonRoutes from './routes/common.route';
 import http, { IncomingMessage } from 'http';
 import WebSocket from 'ws';
 import { roomService } from './services/room.service';
+import * as Y from 'yjs';
+import { RoomModel } from './models/room.model';
 
-const { setupWSConnection } = require('y-websocket/bin/utils') as {
+const { setupWSConnection, setPersistence } = require('y-websocket/bin/utils') as {
   setupWSConnection: (
     conn: WebSocket,
     req: IncomingMessage,
@@ -17,8 +19,10 @@ const { setupWSConnection } = require('y-websocket/bin/utils') as {
       docName?: string;
       gc?: boolean;
       doc?: any;
+      persistence?: any;
     }
-  ) => void;
+  ) => void,
+  setPersistence: any
 };
 
 connectMongo().then().catch();
@@ -40,26 +44,29 @@ app.use(errorHandler);
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-roomService.initializeAutoSave();
-
-wss.on('connection', async (conn: WebSocket, req) => {  
-  const roomId = roomService.extractRoomIdFromReq(req);
-
-  const doc = roomService.getDoc(roomId) ?? await roomService.loadDoc(roomId);
-  roomService.setDocMapping(roomId, doc);
-  roomService.incrementConnection(roomId);
-
+wss.on('connection', async (conn: WebSocket, req) => {
   setupWSConnection(conn, req, {
-    docName: roomId,
-    gc: true,
-    doc
+    gc: true
   });
+})
 
-  conn.on('close', () => {
-    roomService.handleDisconnect(roomId);
-  });
+setPersistence({
+  bindState: async (docName: any, ydoc: any) => {
+    const room = await RoomModel.findOne({ roomId: docName });
+
+    if (room?.ydoc) {
+      Y.applyUpdate(ydoc, new Uint8Array(room.ydoc));
+    }
+
+    ydoc.on('update', async () => {
+      roomService.saveRoom(docName, ydoc);
+    });
+  },
+
+  writeState: async (docName: any, ydoc: any) => {
+    roomService.saveRoom(docName, ydoc);
+  }
 });
-
 const PORT = 3000;
 
 server.listen(PORT, () => {
