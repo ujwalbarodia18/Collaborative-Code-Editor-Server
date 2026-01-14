@@ -1,1 +1,1 @@
-export const ROOM_AUTOSAVE_INTERVAL = 5000;
+export const DEFAULT_ROOM_NAME = 'Untitled';

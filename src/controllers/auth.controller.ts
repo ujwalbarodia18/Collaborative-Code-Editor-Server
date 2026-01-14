@@ -1,47 +1,29 @@
-import { compare, hash } from "bcrypt";
-import { UserModel } from "../models/user.model";
-import { signToken } from "../utils/jwt";
-import { Request, Response, Router } from "express";
-import { ErrorFramework } from "../utils/error";
+import { AuthService } from './../services/auth.service';
+import { Request, Response } from "express";
 import { asyncHandler } from "../utils/helper";
-import { loginService, registerService } from "../services/auth.service";
 
-// export async function register(userDetails: any) {
-//     const { name, email, password } = userDetails;
-// 	if (!email || !password || !name) {
-// 		throw new ErrorFramework('Name, email and password required', 400);
-// 	}
-//     const hashedPassword = await hash(password, 10);
-// 	const newUser = await UserModel.create({
-// 		name,
-// 		email,
-// 		password: hashedPassword,
-// 	});
+export class AuthController {
+	static register = asyncHandler(
+		async (req: Request, res: Response) => {
+			const { name, email, password } = req.body;
+			const user = await AuthService.register({ name, email, password });
 
-//     const user = await UserModel.findById(newUser._id);
-//     return user;
-// }
+			res.status(201).json({ 
+				status: 1, 
+				data: user 
+			});
+		}
+	);
 
-export const registerController = asyncHandler(
-  async (req: Request, res: Response) => {
-	const { name, email, password } = req.body;
-	const user = await registerService({ name, email, password });
+	static login = asyncHandler(
+		async (req: Request, res: Response) => {
+			const { email, password } = req.body;
+			const result = await AuthService.login({ email, password });
 
-	res.status(201).json({ 
-		status: 1, 
-		data: user 
-	});
-  }
-);
-
-export const loginController = asyncHandler(
-  async (req: Request, res: Response) => {
-	const { email, password } = req.body;
-	const result = await loginService({ email, password });
-
-	res.status(200).json({
-		status: 1,
-		data: result
-	});
-  }
-);
+			res.status(200).json({
+				status: 1,
+				data: result
+			});
+		}
+	);
+}

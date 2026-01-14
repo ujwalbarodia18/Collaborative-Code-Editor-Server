@@ -45,28 +45,53 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 wss.on('connection', async (conn: WebSocket, req) => {
+  const roomId = roomService.extractRoomIdFromReq(req);
   setupWSConnection(conn, req, {
-    gc: true
+    gc: true,
+    docName: roomId,
+    persistence,
   });
 })
 
-setPersistence({
+const persistence = {
   bindState: async (docName: any, ydoc: any) => {
     const room = await RoomModel.findOne({ roomId: docName });
-
     if (room?.ydoc) {
       Y.applyUpdate(ydoc, new Uint8Array(room.ydoc));
     }
 
     ydoc.on('update', async () => {
-      roomService.saveRoom(docName, ydoc);
+      await roomService.saveRoom(docName, ydoc);
+      // await RoomModel.updateOne(
+      //   { roomId: docName },
+      //   { ydoc: Buffer.from(update) },
+      //   { upsert: true }
+      // );
     });
   },
 
   writeState: async (docName: any, ydoc: any) => {
-    roomService.saveRoom(docName, ydoc);
+    await roomService.saveRoom(docName, ydoc);
   }
-});
+};
+
+// setPersistence({
+//   bindState: async (docName: any, ydoc: any) => {
+//     const room = await RoomModel.findOne({ roomId: docName });
+
+//     if (room?.ydoc) {
+//       Y.applyUpdate(ydoc, new Uint8Array(room.ydoc));
+//     }
+
+//     ydoc.on('update', async () => {
+//       roomService.saveRoom(docName, ydoc);
+//     });
+//   },
+
+//   writeState: async (docName: any, ydoc: any) => {
+//     roomService.saveRoom(docName, ydoc);
+//   }
+// });
 const PORT = 3000;
 
 server.listen(PORT, () => {

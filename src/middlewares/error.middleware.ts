@@ -13,7 +13,7 @@ export function errorHandler(
       message: err.message
     });
   }
-  
+//   console.log("Err", err);
   return res.status(500).json({
     status: 0,
     message: 'Something went wrong'
