@@ -30,10 +30,22 @@ const { setupWSConnection, setPersistence } = require('y-websocket/bin/utils') a
 connectMongo().then().catch();
 
 const app = express();
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || '')
+  .split(',')
+  .map(o => o.trim());
 app.use(cors({
-  origin: 'http://localhost:4200',
-  methods: ['GET', 'POST'],
-  credentials: true
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+
+    if (ALLOWED_ORIGINS.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 
@@ -44,7 +56,18 @@ app.use('/common', commonRoutes);
 app.use(errorHandler);
 
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const wss = new WebSocket.Server({ 
+  server,
+  verifyClient: (info, done) => {
+    const origin = info.origin;
+
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+      return done(true);
+    }
+
+    return done(false, 403, 'Forbidden');
+  }
+});
 
 wss.on('connection', async (conn: WebSocket, req) => {
   const roomId = roomService.extractRoomIdFromReq(req);
