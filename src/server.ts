@@ -10,6 +10,8 @@ import WebSocket from 'ws';
 import { roomService } from './services/room.service';
 import * as Y from 'yjs';
 import { RoomModel } from './models/room.model';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const { setupWSConnection, setPersistence } = require('y-websocket/bin/utils') as {
   setupWSConnection: (
@@ -48,51 +50,30 @@ wss.on('connection', async (conn: WebSocket, req) => {
   const roomId = roomService.extractRoomIdFromReq(req);
   setupWSConnection(conn, req, {
     gc: true,
-    docName: roomId,
-    persistence,
+    // docName: roomId,
+    // persistence,
   });
 })
 
-const persistence = {
-  bindState: async (docName: any, ydoc: any) => {
+setPersistence({
+  bindState: async (docName: string, ydoc: Y.Doc) => {
     const room = await RoomModel.findOne({ roomId: docName });
+
     if (room?.ydoc) {
       Y.applyUpdate(ydoc, new Uint8Array(room.ydoc));
     }
 
     ydoc.on('update', async () => {
       await roomService.saveRoom(docName, ydoc);
-      // await RoomModel.updateOne(
-      //   { roomId: docName },
-      //   { ydoc: Buffer.from(update) },
-      //   { upsert: true }
-      // );
     });
   },
 
-  writeState: async (docName: any, ydoc: any) => {
+  writeState: async (docName: string, ydoc: Y.Doc) => {
     await roomService.saveRoom(docName, ydoc);
   }
-};
+});
 
-// setPersistence({
-//   bindState: async (docName: any, ydoc: any) => {
-//     const room = await RoomModel.findOne({ roomId: docName });
-
-//     if (room?.ydoc) {
-//       Y.applyUpdate(ydoc, new Uint8Array(room.ydoc));
-//     }
-
-//     ydoc.on('update', async () => {
-//       roomService.saveRoom(docName, ydoc);
-//     });
-//   },
-
-//   writeState: async (docName: any, ydoc: any) => {
-//     roomService.saveRoom(docName, ydoc);
-//   }
-// });
-const PORT = 3000;
+const PORT = process.env.PORT;
 
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

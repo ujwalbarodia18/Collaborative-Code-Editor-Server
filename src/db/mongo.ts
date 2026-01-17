@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
 
 export async function connectMongo() {
-  const uri = 'mongodb+srv://ujwalbarodia:Virattrmkohli18@cluster0.pv5af.mongodb.net/collaborative-code-editor';
-
+  const uri = process.env.MONGO_URI;
+  if (!uri) return;
+  
   await mongoose.connect(uri);
-
   console.log('MongoDB connected');
 }
